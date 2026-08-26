@@ -71,15 +71,15 @@ function App() {
   return (
     <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-4 select-none">
       
-      {/* CÍMSOR - Picit kisebb, hogy a játékterület nagyobb lehessen */}
-      <h1 className="text-3xl font-black text-emerald-400 mb-4 tracking-tight">
+      {/* CÍMSOR - Mostantól lángoló narancssárga text-orange-500 */}
+      <h1 className="text-3xl font-black text-orange-500 mb-4 tracking-tight">
         HitJamParty <span className="text-xs font-normal text-slate-500">v2.0</span>
       </h1>
 
-      {/* JÁTÉKOS STATISZTIKA - text-base és vastagabb betűk */}
+      {/* STATISZTIKA - A pontszám színe is narancs lett */}
       <div className="flex justify-between w-full max-w-sm px-2 mb-4 text-base font-bold">
         <div className="bg-slate-800 border border-slate-700 py-2 px-5 rounded-full shadow-md">
-          ⭐ <span className="text-emerald-400">{score}</span>
+          ⭐ <span className="text-orange-400">{score}</span>
         </div>
         <div className="bg-slate-800 border border-slate-700 py-2 px-5 rounded-full shadow-md">
           <span className="text-rose-500">
@@ -91,10 +91,10 @@ function App() {
       {/* JÁTÉK KÁRTYA */}
       <div className="bg-slate-800 p-6 rounded-3xl shadow-2xl w-full max-w-sm border-2 border-slate-700 text-center">
         
-        {/* AKTUÁLIS FELADAT - text-2xl és text-3xl az óriási betűkhöz */}
+        {/* AKTUÁLIS FELADAT - A kérdőjelek is tüzes narancsban úsznak */}
         <div className="mb-6 min-h-[80px] flex flex-col justify-center">
           {isGameOver ? (
-            <p className="text-2xl font-black text-rose-400">Játék Vége!</p>
+            <p className="text-2xl font-black text-rose-500">Játék Vége!</p>
           ) : (
             currentSong ? (
               isRevealed ? (
@@ -103,7 +103,7 @@ function App() {
                   <p className="text-base text-slate-400 italic mt-1">"{currentSong.title}"</p>
                 </div>
               ) : (
-                <p className="text-4xl font-black tracking-widest text-emerald-400">???</p>
+                <p className="text-4xl font-black tracking-widest text-orange-500">???</p>
               )
             ) : (
               <p className="text-lg font-bold text-slate-400">Készen állsz a játékra?</p>
@@ -115,11 +115,11 @@ function App() {
           <audio src={audioUrl} autoPlay controls className="w-full mb-6 rounded-xl bg-slate-700 h-10" />
         )}
 
-        {/* ÁLLAPOT DOBOZ - text-lg (nagyobb visszajelzés) */}
+        {/* ÁLLAPOT DOBOZ - Ha jól tippel, sárgás-narancsos fényben úszik a doboz */}
         {status && (
           <p className={`text-lg font-extrabold p-3 rounded-xl mb-6 border-2 shadow-inner ${
             status.includes("🎉") 
-              ? "text-emerald-400 bg-emerald-950/40 border-emerald-500/30" 
+              ? "text-orange-400 bg-orange-950/40 border-orange-500/30" 
               : status.includes("❌") || status.includes("💀")
                 ? "text-rose-400 bg-rose-950/40 border-rose-500/30"
                 : "text-blue-400 bg-blue-950/40 border-blue-500/30"
@@ -128,11 +128,11 @@ function App() {
           </p>
         )}
 
-        {/* FŐ AKCIÓ GOMBOK - Vastagabb és nagyobb szöveggel */}
+        {/* FŐ AKCIÓ GOMBOK - Szuper profi Piros-Narancs színátmenet (bg-gradient-to-r) */}
         {isGameOver ? (
           <button
             onClick={handleUjrainditas}
-            className="w-full bg-rose-500 hover:bg-rose-600 text-white font-black text-xl py-4 px-6 rounded-2xl transition duration-200 transform active:scale-95 shadow-xl shadow-rose-500/20"
+            className="w-full bg-rose-600 hover:bg-rose-700 text-white font-black text-xl py-4 px-6 rounded-2xl transition duration-200 transform active:scale-95 shadow-xl shadow-rose-600/20"
           >
             Új játék indítása 🔄
           </button>
@@ -141,7 +141,8 @@ function App() {
             <button
               onClick={handleZeneInditas}
               disabled={loading}
-              className="w-full bg-emerald-400 hover:bg-emerald-500 disabled:bg-slate-700 disabled:text-slate-500 text-slate-900 font-black text-xl py-4 px-6 rounded-2xl transition duration-200 transform active:scale-95 shadow-xl shadow-emerald-400/20"
+              /* FIX: bg-gradient-to-r from-rose-500 to-orange-500 -> Ez csinálja a lángoló hatást */
+              className="w-full bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600 disabled:from-slate-700 disabled:to-slate-700 text-white font-black text-xl py-4 px-6 rounded-2xl transition duration-200 transform active:scale-95 shadow-xl shadow-orange-500/20"
             >
               {loading ? "Betöltés..." : (isRevealed ? "Következő dal! ➡️" : "Zene indítása! 🎵")}
             </button>

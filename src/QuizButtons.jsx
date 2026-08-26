@@ -34,14 +34,14 @@ function QuizButtons({ correctYear, onAnswerSubmit }) {
     /* SZEMÜVEG NÉLKÜLI MÓD: Hatalmas gombok rácsa, nagyobb térközzel */
     <div className="grid grid-cols-2 gap-4 mt-8">
       {options.map((year) => (
-        <button
-          key={year}
-          onClick={() => onAnswerSubmit(year)}
-          /* FIX: text-3xl (óriási számok), py-5 (vastagabb gomb), tiszta fehér szöveg */
-          className="bg-slate-700 hover:bg-slate-600 border-2 border-slate-500 hover:border-emerald-400 text-white font-black text-3xl py-5 px-4 rounded-2xl transition duration-150 transform active:scale-95 shadow-lg shadow-black/40 text-center"
-        >
-          {year}
-        </button>
+		<button
+		  key={year}
+		  onClick={() => onAnswerSubmit(year)}
+		  /* FIX: A szegély (border) mostantól orange-500-ra vált aktív állapotban */
+		  className="bg-slate-700 hover:bg-slate-600 border-2 border-slate-500 hover:border-orange-500 text-white font-black text-3xl py-5 px-4 rounded-2xl transition duration-150 transform active:scale-95 shadow-lg shadow-black/40 text-center"
+		>
+		  {year}
+		</button>
       ))}
     </div>
   );
