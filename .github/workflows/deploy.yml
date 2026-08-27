@@ -26,7 +26,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20 # FIX: node-code helyett node-version kell!
+          node-version: 22 # FIX: Modern Node 22-es verzió a 2026-os GitHub szabványnak megfelelően
           cache: 'npm'
 
       - name: Install dependencies
