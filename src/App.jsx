@@ -3,8 +3,19 @@ import { keresniTunes } from './itunesService';
 import CdRecord from './components/CdRecord';
 import PrimaryButton from './components/PrimaryButton';
 import QuizButtons from './QuizButtons';
+import { useRegisterSW } from 'virtual:pwa-register/react';
 
 function App() {
+  // --- PWA REFRISSÍTÉS FIGYELŐ ---
+  const {
+    needRefresh: [needRefresh, setNeedRefresh],
+    updateServiceWorker,
+  } = useRegisterSW({
+    onRegisterError(error) {
+      console.error("PWA hiba:", error);
+    }
+  });
+
   // --- JÁTÉK ÁLLAPOTOK ---
   const [albums, setAlbums] = useState([]); // Itt tároljuk a 3 lemez adatait a JSON-ből
   const [selectedAlbum, setSelectedAlbum] = useState(null); // Az aktuálisan kiválasztott CD objektum
@@ -104,6 +115,18 @@ function App() {
 
   return (
     <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-4 select-none">
+	  {/* FRISSÍTÉSI PANEL: Csak akkor ugrik fel, ha a GitHub-on új kódot kapott az app */}
+      {needRefresh && (
+        <div className="fixed top-4 left-4 right-4 md:max-w-sm md:mx-auto bg-gradient-to-r from-rose-600 to-orange-600 p-4 rounded-2xl shadow-2xl border border-orange-400 z-50 text-center animate-bounce">
+          <p className="font-black text-sm text-white mb-2">🔥 Új verzió érhető el a HitJam-ből!</p>
+          <button
+            onClick={() => updateServiceWorker(true)}
+            className="bg-white text-slate-950 font-black text-xs py-2 px-4 rounded-xl shadow-md transition transform active:scale-95 cursor-pointer"
+          >
+            Frissítés most 🔄
+          </button>
+        </div>
+      )}
       <h1 className="text-3xl font-black text-orange-500 mb-2 tracking-tight">
         HitJamParty <span className="text-sm font-normal text-slate-500">v2.0</span>
       </h1>
