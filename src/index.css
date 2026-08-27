@@ -1,1 +1,9 @@
 @import "tailwindcss";
+
+@theme {
+  /* Itt adjuk meg a lángoló HitJam színeket a CSS-ben */
+  --color-brand-start: var(--color-rose-500);
+  --color-brand-end: var(--color-orange-500);
+  --color-brand-hover-start: var(--color-rose-600);
+  --color-brand-hover-end: var(--color-orange-600);
+}

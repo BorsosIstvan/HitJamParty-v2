@@ -1,9 +1,14 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { keresniTunes } from './itunesService';
-import { SONGS_DATA } from './songsData';
+import CdRecord from './components/CdRecord';
+import PrimaryButton from './components/PrimaryButton';
 import QuizButtons from './QuizButtons';
 
 function App() {
+  // --- JÁTÉK ÁLLAPOTOK ---
+  const [albums, setAlbums] = useState([]); // Itt tároljuk a 3 lemez adatait a JSON-ből
+  const [selectedAlbum, setSelectedAlbum] = useState(null); // Az aktuálisan kiválasztott CD objektum
+  
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const [audioUrl, setAudioUrl] = useState("");
@@ -14,18 +19,46 @@ function App() {
   const [lives, setLives] = useState(3);
   const [isGameOver, setIsGameOver] = useState(false);
 
+  const audioRef = useRef(null);
+  const [isReallyPlaying, setIsReallyPlaying] = useState(false);
+
+  // 1. ASZINKRON KÉZIKÖNYV: Betöltjük a JSON fájlt, amikor elindul az app
+  useEffect(() => {
+    fetch('data/albums.json')
+      .then((res) => res.json())
+      .then((data) => {
+        setAlbums(data);
+        setSelectedAlbum(data[0]); // Alapértelmezetten a legelső Retro CD-t tesszük be
+      })
+      .catch((err) => console.error("Hiba a JSON betöltésekor:", err));
+  }, []);
+
+  // 2. LEMEZCSERE UTASÍTÁS
+  const handleAlbumCsere = (albumId) => {
+    const megtalaltAlbum = albums.find(a => a.id === albumId);
+    if (megtalaltAlbum) {
+      setSelectedAlbum(megtalaltAlbum);
+      handleUjrainditas(); // Lemezcserénél lenullázzuk a pontokat és életeket a tiszta kezdéshez
+      setStatus(`Lemez kicserélve: ${megtalaltAlbum.title}`);
+    }
+  };
+
   const handleZeneInditas = async () => {
+    if (!selectedAlbum) return;
+    
     setLoading(true);
-    setStatus("Új dal sorsolása...");
+    setStatus("Új dal sorsolása a lemezről...");
     setAudioUrl("");
     setCurrentSong(null);
     setIsRevealed(false);
+    setIsReallyPlaying(false);
 
-    const veletlenIndex = Math.floor(Math.random() * SONGS_DATA.length);
-    const kivalasztottDal = SONGS_DATA[veletlenIndex];
+    // 3. SORSOLÁS: Most már Szigorúan a kiválasztott CD dalaiból választunk!
+    const dalok = selectedAlbum.songs;
+    const veletlenIndex = Math.floor(Math.random() * dalok.length);
+    const kivalasztottDal = dalok[veletlenIndex];
 
     const eredmeny = await keresniTunes(kivalasztottDal.artist, kivalasztottDal.title);
-
     setLoading(false);
 
     if (eredmeny.success) {
@@ -33,13 +66,12 @@ function App() {
       setStatus("Melyik évben jelent meg?");
       setAudioUrl(eredmeny.previewUrl);
     } else {
-      setStatus(`Hiba: ${eredmeny.error}`);
+      setStatus(`Hiba: ${eredmeny.error}. Próbáld újra!`);
     }
   };
 
   const handleValaszEllenorzes = (tippeltEv) => {
     if (!currentSong || isRevealed || isGameOver) return;
-
     setIsRevealed(true);
 
     if (tippeltEv === currentSong.year) {
@@ -48,10 +80,11 @@ function App() {
     } else {
       const UjEletekSzama = lives - 1;
       setLives(UjEletekSzama);
-      
       if (UjEletekSzama <= 0) {
         setIsGameOver(true);
         setStatus(`💀 JÁTÉK VÉGE! (Helyes év: ${currentSong.year})`);
+        if (audioRef.current) audioRef.current.pause();
+        setIsReallyPlaying(false);
       } else {
         setStatus(`❌ HELYTELEN! (Helyes év: ${currentSong.year})`);
       }
@@ -66,33 +99,47 @@ function App() {
     setAudioUrl("");
     setStatus("");
     setIsRevealed(false);
+    setIsReallyPlaying(false);
   };
 
   return (
     <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-4 select-none">
-      
-      {/* CÍMSOR - Mostantól lángoló narancssárga text-orange-500 */}
-      <h1 className="text-3xl font-black text-orange-500 mb-4 tracking-tight">
-        HitJamParty <span className="text-xs font-normal text-slate-500">v2.0</span>
+      <h1 className="text-3xl font-black text-orange-500 mb-2 tracking-tight">
+        HitJamParty <span className="text-sm font-normal text-slate-500">v2.0</span>
       </h1>
 
-      {/* STATISZTIKA - A pontszám színe is narancs lett */}
+      {/* 4. PROFI LEMEZCSERÉLŐ FELÜLET */}
+      {albums.length > 0 && (
+        <div className="mb-4 bg-slate-800 p-2 rounded-2xl border border-slate-700 flex gap-1 text-xs font-bold max-w-sm w-full justify-around shadow-md">
+          {albums.map((album) => (
+            <button
+              key={album.id}
+              onClick={() => handleAlbumCsere(album.id)}
+              className={`py-2 px-3 rounded-xl transition duration-150 cursor-pointer ${
+                selectedAlbum?.id === album.id
+                  ? 'bg-gradient-to-r from-rose-500 to-orange-500 text-white shadow-md'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+              }`}
+            >
+              {album.title.split(' ')[0]} {/* Csak az első szót írjuk ki, hogy elférjen mobilon */}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* STATISZTIKA */}
       <div className="flex justify-between w-full max-w-sm px-2 mb-4 text-base font-bold">
         <div className="bg-slate-800 border border-slate-700 py-2 px-5 rounded-full shadow-md">
           ⭐ <span className="text-orange-400">{score}</span>
         </div>
         <div className="bg-slate-800 border border-slate-700 py-2 px-5 rounded-full shadow-md">
-          <span className="text-rose-500">
-            {"❤️".repeat(Math.max(0, lives)) || "💔"}
-          </span>
+          <span className="text-rose-500">{"❤️".repeat(Math.max(0, lives)) || "💔"}</span>
         </div>
       </div>
 
       {/* JÁTÉK KÁRTYA */}
       <div className="bg-slate-800 p-6 rounded-3xl shadow-2xl w-full max-w-sm border-2 border-slate-700 text-center">
-        
-        {/* AKTUÁLIS FELADAT - A kérdőjelek is tüzes narancsban úsznak */}
-        <div className="mb-6 min-h-[80px] flex flex-col justify-center">
+        <div className="mb-4 min-h-[80px] flex flex-col justify-center">
           {isGameOver ? (
             <p className="text-2xl font-black text-rose-500">Játék Vége!</p>
           ) : (
@@ -106,16 +153,30 @@ function App() {
                 <p className="text-4xl font-black tracking-widest text-orange-500">???</p>
               )
             ) : (
-              <p className="text-lg font-bold text-slate-400">Készen állsz a játékra?</p>
+              <div>
+                <p className="text-lg font-bold text-slate-200">{selectedAlbum?.title}</p>
+                <p className="text-xs text-slate-400 mt-1 max-w-[250px] mx-auto">{selectedAlbum?.description}</p>
+              </div>
             )
           )}
         </div>
 
+        {/* A CD-re átadjuk a kiválasztott album egyedi borítóját is! */}
+        <CdRecord isPlaying={isReallyPlaying} coverUrl={selectedAlbum?.cover} />
+
         {audioUrl && !isGameOver && (
-          <audio src={audioUrl} autoPlay controls className="w-full mb-6 rounded-xl bg-slate-700 h-10" />
+          <audio 
+            ref={audioRef}
+            src={audioUrl} 
+            autoPlay 
+            controls 
+            onPlay={() => setIsReallyPlaying(true)}
+            onPause={() => setIsReallyPlaying(false)}
+            onEnded={() => setIsReallyPlaying(false)}
+            className="w-full mb-6 rounded-xl bg-slate-700 h-10" 
+          />
         )}
 
-        {/* ÁLLAPOT DOBOZ - Ha jól tippel, sárgás-narancsos fényben úszik a doboz */}
         {status && (
           <p className={`text-lg font-extrabold p-3 rounded-xl mb-6 border-2 shadow-inner ${
             status.includes("🎉") 
@@ -128,28 +189,16 @@ function App() {
           </p>
         )}
 
-        {/* FŐ AKCIÓ GOMBOK - Szuper profi Piros-Narancs színátmenet (bg-gradient-to-r) */}
         {isGameOver ? (
-          <button
-            onClick={handleUjrainditas}
-            className="w-full bg-rose-600 hover:bg-rose-700 text-white font-black text-xl py-4 px-6 rounded-2xl transition duration-200 transform active:scale-95 shadow-xl shadow-rose-600/20"
-          >
-            Új játék indítása 🔄
-          </button>
+          <PrimaryButton onClick={handleUjrainditas}>Új játék indítása 🔄</PrimaryButton>
         ) : (
           (!currentSong || isRevealed) && (
-            <button
-              onClick={handleZeneInditas}
-              disabled={loading}
-              /* FIX: bg-gradient-to-r from-rose-500 to-orange-500 -> Ez csinálja a lángoló hatást */
-              className="w-full bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600 disabled:from-slate-700 disabled:to-slate-700 text-white font-black text-xl py-4 px-6 rounded-2xl transition duration-200 transform active:scale-95 shadow-xl shadow-orange-500/20"
-            >
-              {loading ? "Betöltés..." : (isRevealed ? "Következő dal! ➡️" : "Zene indítása! 🎵")}
-            </button>
+            <PrimaryButton onClick={handleZeneInditas} loading={loading}>
+              {isRevealed ? "Következő dal! ➡️" : "Zene indítása! 🎵"}
+            </PrimaryButton>
           )
         )}
 
-        {/* KVÍZGOMBOK */}
         {currentSong && !isRevealed && !isGameOver && (
           <QuizButtons 
             correctYear={currentSong.year} 
