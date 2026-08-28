@@ -4,6 +4,7 @@
     "title": "Retro Party Classic",
     "description": "A 60-as, 70-es és 80-as évek legnagyobb lángoló pop, rock és diszkó slágerei.",
     "cover": "icon/retro-party.png",
+	"price": 0,
     "songs": [
       { "artist": "Simon & Garfunkel", "title": "The Sound of Silence", "year": 1964 },
       { "artist": "Queen", "title": "Bohemian Rhapsody", "year": 1975 },
@@ -115,6 +116,7 @@
     "title": "Millennial Fever",
     "description": "A 90-es és 2000-es évek felejthetetlen pop, rock, r&b és hip-hop slágerei.",
     "cover": "icon/millennial-fever.png",
+	"price": 10,
     "songs": [
       { "artist": "Nirvana", "title": "Smells Like Teen Spirit", "year": 1991 },
       { "artist": "Britney Spears", "title": "...Baby One More Time", "year": 1998 },
@@ -226,6 +228,7 @@
     "title": "Modern Hits",
     "description": "Napjaink rádiós és streaming kedvencei 2010-től a legújabb lángoló slágerekig.",
     "cover": "icon/modern-hits.png",
+	"price": 10,
     "songs": [
       { "artist": "Adele", "title": "Rolling in the Deep", "year": 2010 },
       { "artist": "Daft Punk", "title": "Get Lucky", "year": 2013 },
